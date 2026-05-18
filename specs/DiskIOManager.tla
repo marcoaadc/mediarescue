@@ -155,13 +155,6 @@ FinishReading ==
     /\ UNCHANGED <<readQueue, readCache, badSectorLog, retryCount,
                    currentSector, cacheOrder>>
 
-(*
- * Done -- stutter in Finished so liveness checking terminates properly.
- *)
-Done ==
-    /\ ioState = "Finished"
-    /\ UNCHANGED vars
-
 -----------------------------------------------------------------------------
 (* ---- Composed next-state relation and fairness ------------------------ *)
 
@@ -178,7 +171,6 @@ Next == \/ StartReading
         \/ SkipSector
         \/ EvictCache
         \/ FinishReading
-        \/ Done
 
 Fairness ==
     /\ WF_vars(StartReading)
@@ -187,7 +179,6 @@ Fairness ==
     /\ WF_vars(SkipSector)
     /\ WF_vars(EvictCache)
     /\ WF_vars(FinishReading)
-    /\ WF_vars(Done)
 
 Spec == Init /\ [][Next]_vars /\ Fairness
 
@@ -240,10 +231,17 @@ QueueMonotonic ==
         \A j \in 1..(i - 1) :
             readQueue[j] < readQueue[i]
 
+(* Cache and cacheOrder must stay consistent: same length, same sector set *)
+CacheConsistency ==
+    /\ Len(cacheOrder) = Len(readCache)
+    /\ \A i \in 1..Len(cacheOrder) :
+        \E k \in 1..Len(readCache) : readCache[k].sector = cacheOrder[i]
+
 (* Composed safety property (for convenience; each conjunct is also checked
    individually via the .cfg file). *)
 SafetyInv == TypeOK /\ BoundedRetries /\ CacheBounded
              /\ NoDataCorruption /\ BadSectorLogged /\ QueueMonotonic
+             /\ CacheConsistency
 
 -----------------------------------------------------------------------------
 (* ---- Liveness Properties ---------------------------------------------- *)

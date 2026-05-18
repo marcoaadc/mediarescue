@@ -49,6 +49,7 @@ TypeOK ==
     /\ jobs \subseteq JobId
     /\ diskLock \in {"free"} \union JobId
     /\ waitQueue \in Seq(JobId)
+    /\ Len(waitQueue) <= MAX_JOBS
     /\ \A i \in 1..Len(waitQueue) : waitQueue[i] \in JobId
     /\ jobState \in [JobId -> JobStates]
     /\ completedJobs \subseteq JobId
@@ -116,18 +117,6 @@ ReleaseLock(j) ==
     /\ UNCHANGED <<jobs, waitQueue, jobState, completedJobs>>
 
 (*
- * ProcessData: a Processing job with no disk lock works on its data
- * independently. This is a no-op transition that models CPU-bound work;
- * the job stays in Processing until CompleteJob fires.
- * Separated from CompleteJob to allow interleaving with other jobs.
- *)
-ProcessData(j) ==
-    /\ j \in jobs
-    /\ jobState[j] = "Processing"
-    /\ diskLock # j                                 \* Must have released the lock
-    /\ UNCHANGED vars                               \* Stuttering step: models CPU work
-
-(*
  * CompleteJob: a Processing job that has released the disk lock finishes
  * and moves to Done. It is added to completedJobs.
  *)
@@ -147,7 +136,6 @@ Next ==
     \/ GrantAccess
     \/ \E j \in JobId : ReadDisk(j)
     \/ \E j \in JobId : ReleaseLock(j)
-    \/ \E j \in JobId : ProcessData(j)
     \/ \E j \in JobId : CompleteJob(j)
 
 -----------------------------------------------------------------------------
@@ -175,9 +163,9 @@ Spec == Init /\ [][Next]_vars /\ Fairness
 -----------------------------------------------------------------------------
 (* Safety Invariants *)
 
-(* At most one job holds the disk lock at any time *)
+(* At most one job is in Reading state at any time *)
 MutualExclusion ==
-    diskLock \in {"free"} \union JobId
+    Cardinality({j \in JobId : jobState[j] = "Reading"}) <= 1
 
 (* If a job holds the disk lock, its state must be Reading or Processing.
    Once in Processing the job may still hold the lock briefly before

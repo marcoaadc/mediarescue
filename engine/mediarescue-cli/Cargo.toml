@@ -1,0 +1,20 @@
+[package]
+name = "mediarescue-cli"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "CLI for MediaRescue data recovery"
+
+[[bin]]
+name = "mediarescue"
+path = "src/main.rs"
+
+[dependencies]
+mediarescue-core = { path = "../mediarescue-core" }
+clap = { version = "4", features = ["derive"] }
+tokio.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+serde_json.workspace = true

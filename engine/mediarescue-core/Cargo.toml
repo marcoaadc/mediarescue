@@ -1,0 +1,25 @@
+[package]
+name = "mediarescue-core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "Core data recovery library for MediaRescue"
+
+[dependencies]
+thiserror.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+uuid.workspace = true
+tokio = { workspace = true, features = ["sync"] }
+tracing.workspace = true
+chrono.workspace = true
+bytes.workspace = true
+bitvec = "1"
+image = { version = "0.25", default-features = false, features = ["jpeg", "png"] }
+
+[dev-dependencies]
+tempfile = "3"
+proptest = "1"
+tokio = { workspace = true, features = ["full", "test-util"] }

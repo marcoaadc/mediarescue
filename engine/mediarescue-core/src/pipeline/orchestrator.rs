@@ -7,13 +7,9 @@ use crate::scanner::surface::SurfaceScanner;
 use crate::types::{
     FileStatus, RecoveredFile, RecoveryEvent, ScanConfig, ScanState,
 };
-use super::progress::ProgressTracker;
 use super::session::RecoverySession;
 use std::path::PathBuf;
-use std::sync::atomic::AtomicBool;
-use std::sync::Arc;
 use tokio::sync::broadcast;
-use uuid::Uuid;
 
 pub struct RecoveryOrchestrator {
     config: ScanConfig,
@@ -47,7 +43,7 @@ impl RecoveryOrchestrator {
         let repairer = Repairer::new();
         let mut carved_files: Vec<(RecoveredFile, Vec<u8>)> = Vec::new();
 
-        for (idx, sig) in signatures.iter().enumerate() {
+        for sig in signatures.iter() {
             match carver.carve_file(sig, reader.as_ref()) {
                 Ok((file, data)) => {
                     let _ = event_tx.send(RecoveryEvent::CarvingProgress {

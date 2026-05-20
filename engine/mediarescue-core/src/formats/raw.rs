@@ -65,7 +65,7 @@ impl FormatHandler for RawHandler {
         let mut score: f32 = 0.0;
 
         match Self::detect_raw_variant(data) {
-            Some(variant) => {
+            Some(_variant) => {
                 score += 0.4;
                 // Check TIFF IFD pointer
                 if data.len() >= 8 {

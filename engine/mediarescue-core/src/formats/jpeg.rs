@@ -125,7 +125,7 @@ impl FormatHandler for JpegHandler {
 
     fn estimate_file_size(
         &self,
-        header: &[u8],
+        _header: &[u8],
         reader: &dyn DeviceReader,
         offset: u64,
     ) -> Result<u64, FormatError> {
@@ -222,7 +222,7 @@ impl FormatHandler for JpegHandler {
     }
 
     fn generate_thumbnail(&self, data: &[u8], max_dim: u32) -> Result<Vec<u8>, FormatError> {
-        use image::io::Reader as ImageReader;
+        use image::ImageReader;
         use std::io::Cursor;
 
         let reader = ImageReader::new(Cursor::new(data))
@@ -260,7 +260,7 @@ struct JpegMarker {
     data_length: usize,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 enum MarkerType {
     SOI,
     EOI,

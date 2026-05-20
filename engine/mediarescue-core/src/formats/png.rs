@@ -167,7 +167,7 @@ impl FormatHandler for PngHandler {
     }
 
     fn generate_thumbnail(&self, data: &[u8], max_dim: u32) -> Result<Vec<u8>, FormatError> {
-        use image::io::Reader as ImageReader;
+        use image::ImageReader;
         use std::io::Cursor;
 
         let reader = ImageReader::new(Cursor::new(data))

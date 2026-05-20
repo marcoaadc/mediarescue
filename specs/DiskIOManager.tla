@@ -248,14 +248,16 @@ SafetyInv == TypeOK /\ BoundedRetries /\ CacheBounded
 
 (*
  * AllSectorsAttempted -- every sector from the original queue is eventually
- * either cached, logged as bad, or the entire I/O has finished (the sector
- * was cached and later evicted, which is fine).
+ * either cached, logged as bad, or fully processed (dequeued and system
+ * finished).  The third disjunct requires the sector to no longer be in
+ * readQueue, proving it was actually dequeued and processed even if later
+ * evicted from cache.
  *)
 AllSectorsAttempted ==
     \A s \in AllSectors :
         <>( s \in badSectorLog
             \/ (\E i \in 1..Len(readCache) : readCache[i].sector = s)
-            \/ ioState = "Finished" )
+            \/ (ioState = "Finished" /\ ~(\E i \in 1..Len(readQueue) : readQueue[i] = s)) )
 
 (*
  * IOCompletes -- the I/O manager eventually reaches the Finished state.

@@ -1,12 +1,8 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import { scanWs } from '@/api/websocket';
 import { useScanStore } from '@/stores/scanStore';
 import type { WsEvent, RecoveredFile } from '@/types';
 
-/**
- * Hook that connects to the scan WebSocket and dispatches events
- * to the scan store. Manages connection lifecycle with the component.
- */
 export function useWebSocket() {
   const {
     updateProgress,
@@ -15,6 +11,8 @@ export function useWebSocket() {
     updateFile,
     setError,
   } = useScanStore();
+
+  const [isConnected, setIsConnected] = useState(false);
 
   const handlersRef = useRef({ updateProgress, setStatus, addFile, updateFile, setError });
   handlersRef.current = { updateProgress, setStatus, addFile, updateFile, setError };
@@ -77,11 +75,18 @@ export function useWebSocket() {
     scanWs.connect();
     const unsubscribe = scanWs.subscribe(handleEvent);
 
+    const interval = setInterval(() => {
+      setIsConnected(scanWs.isConnected);
+    }, 1000);
+
+    setIsConnected(scanWs.isConnected);
+
     return () => {
+      clearInterval(interval);
       unsubscribe();
       scanWs.disconnect();
     };
   }, [handleEvent]);
 
-  return { isConnected: scanWs.isConnected };
+  return { isConnected };
 }

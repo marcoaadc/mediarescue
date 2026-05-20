@@ -62,14 +62,20 @@ export const useScanStore = create<ScanState>((set) => ({
   },
 
   addFile: (file) =>
-    set((state) => ({ files: [...state.files, file] })),
+    set((state) => {
+      if (state.files.some((f) => f.id === file.id)) return state;
+      const files = state.files.concat(file);
+      return { files };
+    }),
 
   updateFile: (fileId, updates) =>
-    set((state) => ({
-      files: state.files.map((f) =>
-        f.id === fileId ? { ...f, ...updates } : f,
-      ),
-    })),
+    set((state) => {
+      const idx = state.files.findIndex((f) => f.id === fileId);
+      if (idx === -1) return state;
+      const files = state.files.slice();
+      files[idx] = { ...files[idx], ...updates };
+      return { files };
+    }),
 
   setFiles: (files) => set({ files }),
   setError: (error) => set({ error, status: error ? 'error' : 'idle' }),

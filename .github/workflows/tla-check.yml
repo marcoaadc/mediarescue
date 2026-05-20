@@ -1,0 +1,59 @@
+name: TLA+ Model Check
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'specs/**'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'specs/**'
+
+jobs:
+  model-check:
+    name: TLC Model Checker
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Download TLA+ tools
+        run: |
+          mkdir -p tools
+          curl -L -o tools/tla2tools.jar \
+            https://github.com/tlaplus/tlaplus/releases/download/v1.8.0/tla2tools.jar
+
+      - name: Check ScannerStateMachine
+        run: |
+          java -jar tools/tla2tools.jar \
+            -config specs/ScannerStateMachine.cfg \
+            specs/ScannerStateMachine.tla
+
+      - name: Check RecoveryPipeline
+        run: |
+          java -jar tools/tla2tools.jar \
+            -config specs/RecoveryPipeline.cfg \
+            specs/RecoveryPipeline.tla
+
+      - name: Check DiskIOManager
+        run: |
+          java -jar tools/tla2tools.jar \
+            -config specs/DiskIOManager.cfg \
+            specs/DiskIOManager.tla
+
+      - name: Check FileReconstruction
+        run: |
+          java -jar tools/tla2tools.jar \
+            -config specs/FileReconstruction.cfg \
+            specs/FileReconstruction.tla
+
+      - name: Check ConcurrentRecovery
+        run: |
+          java -jar tools/tla2tools.jar \
+            -config specs/ConcurrentRecovery.cfg \
+            specs/ConcurrentRecovery.tla
